@@ -1,0 +1,8 @@
+{
+  "name": "sipcallclient",
+  "description": "SIP Call Client",
+  "dependencies": {
+    "request": "*",
+    "ws":"*"
+  }
+}

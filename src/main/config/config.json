@@ -1,0 +1,19 @@
+{
+    "localUserName" : "5145551234",
+    //"localSipAddress" : "10.3.9.3",
+    //"localSipPort" : 5064,
+    //"localRtpPort" : 10010,
+    "nbLegs" : 1,
+    "nbIterations" : 1,
+    "to": "sip:4627@mt-jdebroin",
+    "tasks" :  
+        [
+            {
+                "type" : "record",
+                "fileName" : "c:/tmp/in.raw"
+            },
+            { "type" : "pause", "delay" : 3 }
+            ,
+            { "type" : "play", "fileName" : "03-rambling-caller-input-ulaw.ul" }
+        ]
+}

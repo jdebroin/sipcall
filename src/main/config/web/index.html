@@ -1,0 +1,340 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <title>SIP Call Server</title>
+<link
+	href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<!-- <script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.7/angular.min.js"></script> -->
+<script
+	src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.js"></script>
+<script src="js/controllers/sipcall.js"></script>
+</head>
+<body>
+	<div class="container" ng-controller="SipCallCtrl">
+		<div class="page-header">
+			<h1>SIP/RTP Test</h1>
+		</div>
+		<div class="panel panel-danger" ng-show="errorMessage">
+			<div class="panel-heading">
+				<h3 class="panel-title">Error</h3>
+			</div>
+			<div class="panel-body">{{errorMessage}}</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label class="control-label col-sm-6" for="inputLocalSipAddress">SIP address (empty to use primary address)</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="inputLocalSipAddress"
+								ng-model="config.localSipAddress" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-6" for="inputLocalSipPort">SIP port (0 to use a random port)</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="inputLocalSipPort"
+								ng-model="config.localSipPort" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-6" for="inputLocalRtpPort">RTP port (0 to use a random port)</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="inputLocalRtpPort"
+								ng-model="config.localRtpPort" />
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-6 col-sm-3">
+							<button type="submit"
+								class="btn btn-primary btn-default form-control"
+								ng-disabled="initialized || inInit" ng-click="init()">Initialize</button>
+						</div>
+						<div class="col-sm-3">
+							<button type="button" class="btn btn-primary form-control"
+								ng-disabled="!initialized || inShutdown" ng-click="shutdown()">Shutdown</button>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-6 col-sm-3">
+							<button type="button"
+								class="btn btn-primary form-control"
+								ng-disabled="!initialized || inShutdown" ng-click="waitForInvite()">Wait for INVITE</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="col-md-6">
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label class="control-label col-sm-6" for="inputFromUser">From user</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="inputFromUser" ng-model="fromUser" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-6" for="inputTo">To SIP url</label>
+                        <div class="col-sm-6">
+							<input type="text" class="form-control" id="inputTo" ng-model="to" />
+                        </div>
+					</div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-6" for="inputOutboundTo">Outbound to SIP url</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="inputOutboundTo" ng-model="outboundTo" />
+                        </div>
+                    </div>
+        			<div class="form-group">
+		  		        <label class="control-label col-sm-6" for="inputRecordingDirectory">Recording directory (empty to disable auto-record)</label>
+                        <div class="col-sm-6">
+    		  		        <input type="text" class="form-control" id="inputRecordingDirectory" ng-model="recordingDirectory" />
+            			</div>
+		            </div>
+		            <div class="form-group">
+                        <label class="control-label col-sm-6" for="inputPlayFile">Play file (empty to disable auto-play)</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="inputPlayFile" ng-model="playFile" />
+		                </div>
+                    </div>
+	                <div class="form-group">
+                        <div class="col-sm-offset-6 col-sm-3">
+			                <button type="submit" class="btn btn-primary form-control"
+				                 ng-disabled="!initialized || inShutdown" ng-click="sendInvite()">Send INVITE</button>
+    	                </div>
+    	            </div>
+	           </form>
+               <hr />
+	       </div>
+	   </div>
+       <div class="row">
+            <div class="col-md-12">
+				<span>{{sipcalls.length}} call(s)</span>
+				<table class="table table-striped table-bordered">
+					<thead>
+						<tr>
+							<th>Call Id</th>
+							<th>From User</th>
+							<th>To</th>
+							<th>Response</th>
+	                        <th>Reason</th>
+	                        <th>Code</th>
+							<th>Record</th>
+							<th>Play</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="sipcall in sipcalls">
+							<th>{{sipcall.callId}}</th>
+							<td>{{sipcall.fromUser}}</td>
+							<td>{{sipcall.to}}</td>
+							<td>{{sipcall.response}}</td>
+	                        <td>{{sipcall.reason}}</td>
+	                        <td>{{sipcall.code}}</td>
+							<td><input type="text" ng-model="sipcall.recordFileName"
+								size="30" />
+								<button type="button" class="btn btn-primary"
+									ng-click="record(sipcall.callId, sipcall.recordFileName)"
+									ng-show="isCallActive(sipcall)">Start</button></td>
+							<td><input type="text" ng-model="sipcall.playFileName"
+								size="30" />
+								<button type="button" class="btn btn-primary"
+									ng-click="play(sipcall.callId, sipcall.playFileName)"
+									ng-show="isCallActive(sipcall)">Start</button></td>
+							<td>
+								<button type="button" class="btn btn-primary"
+									ng-click="sendBye(sipcall.callId)"
+									ng-show="isCallActive(sipcall)">Send BYE</button>
+								<button type="button" class="btn btn-primary"
+									ng-click="remove(sipcall.callId)"
+									ng-show="isCallFinished(sipcall)">Remove</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+               <hr />
+           </div>
+       </div>
+       <div class="row">
+            <div class="col-md-12">
+				<h3>Running SipCall Server</h3>
+				<h4>Use pre-installed SipCall server</h4>
+				<ul>
+					<li><a href="http://mtl-da55-vm6:8084">Access
+							mtl-da55-vm6:8084</a></li>
+				</ul>
+				<h4>Or download SipCall and use pre-built SipCall Server</h4>
+				<ul>
+					<li><a
+						href="http://mtl-da55-vm6/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar">Download
+							jar</a></li>
+					<li>Run jar: <pre>
+java -Dlog4j.configuration=log4j.dev.properties -jar sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar {http port}</pre>
+				</ul>
+				<h4>Or build SipCall</h4>
+				<ul>
+					<li>Build RTP jar: <pre>
+cd .../tools/efflux
+mvn install</pre>
+					</li>
+					<li>Build SipCall jar: <pre>
+cd .../tools/sipcall
+mvn install</pre>
+					</li>
+					<li>Use all-in-one SipCall jar: <pre>
+target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar</pre>
+					</li>
+				</ul>
+				<h4>Changing logging configuration</h4>
+				<ul>
+					<li><a href="http://mtl-da55-vm6/log4j.dev.properties">Download
+							log4j file</a></li>
+					<li>Modify log4j.dev.properties if needed</li>
+					<li>Run jar with modified log4j property file: <pre>
+java -Dlog4j.configuration=file:log4j.dev.properties -jar sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar</pre>
+				</ul>
+				<h3>SipCall Web Service</h3>
+				<h4>Sample client</h4>
+                                lasipcallctrl.js is a sample node.js module to demonstrate how to use SipCallServer to do load tests.
+				<br/>
+                                Download <a href="http://mtl-da55-vm6/sipcallclient">sipcallclient sample</a> to some new directory and check instructions in README.md.
+				<br/>
+                                <h4>Initialize</h4>
+				Call the <b>init</b> method to initialize the SIP and RTP stacks.
+				<ul>
+				<li>
+				The <b>localSipAddress</b>
+				parameter may be left blank to use the IP address of the server
+				running the SipCall Service.
+                </li>
+                <li>
+                The <b>localSipPort</b>
+                parameter may be set to 0 use a random port.
+                </li>
+                <li>
+                The <b>localRtpPort</b>
+                parameter may be set to 0 use a random port.
+                </li>
+                </ul>
+				<pre>Request:
+POST
+http://mtl-da55-vm6:8084/ws/sipcall/init
+Content-Type: application/json
+{"config":{"localSipAddress":"","localSipPort":0,"localRtpPort":0}}</pre>
+                <h4>Send an INVITE</h4>
+				Place one or more calls by calling the <b>sendInvite</b> method.
+				<br/>
+				To identify the call, put a unique string in the <b>fromUser</b> parameter. This
+				will be used to build the From header of the SIP INVITE.
+				<br/>
+				Use the <b>to</b> parameter to specify the destination of the
+				call. This will be copied to the To header of the SIP INVITE.
+				<br/>
+				The <b>sendInvite</b> method returns a <b>callId</b> value,
+				for example 1.0, that is used to identify the call in the other
+				methods.
+				<pre>Request:
+POST
+http://mtl-da55-vm6:8084/ws/sipcall/sendInvite
+Content-Type: application/json
+{"fromUser":"1","to":"sip:4627@mtl-da45-vm2"}
+
+Reponse:
+Content-Type: application/json
+{"callId":"1.0"}</pre>
+                <h4>Send a BYE</h4>
+                Hangup a call by calling the <b>sendBye</b> method.
+                <br/>
+                Specify the call in the <b>callId</b> parameter.
+                <pre>Request:
+POST
+http://mtl-da55-vm6:8084/sipcall/sendBye
+Content-Type: application/json
+{"callId":"1.0"}
+
+Reponse:
+Content-Type: application/json
+{"callId":"1.0"}</pre>
+                <h4>Record audio to a file</h4>
+                Record the audio arriving from the remote destination (NVP) into a file by calling the <b>record</b> method.
+                <br/>
+                Specify the call in the <b>callId</b> parameter.
+                <br/>
+                Specify the file name in the <b>fileName</b> parameter.
+                <pre>Request:
+POST
+http://mtl-da55-vm6:8084/sipcall/record
+Content-Type: application/json
+{"callId":"1.0", "fileName" : "c:/tmp/in-1.0.ul"}
+
+Reponse:
+Content-Type: application/json
+{"callId":"1.0"}</pre>
+                <h4>Play a file</h4>
+                Play a file by calling the <b>play</b> method.
+                <br/>
+                Specify the call in the <b>callId</b> parameter.
+                <br/>
+                Specify the file name in the <b>fileName</b> parameter.
+                <pre>Request:
+POST
+http://mtl-da55-vm6:8084/sipcall/play
+Content-Type: application/json
+{"callId":"1.0", "fileName" : "03-rambling-caller-input-ulaw.ul"}
+
+Reponse:
+Content-Type: application/json
+{"callId":"1.0"}</pre>
+				<h4>Poll for responses</h4>
+				Results from asynchronous methods and SIP responses are collected by calling the <b>poll</b> method.
+				Use the returned <b>response</b> value to decide what to do next.
+				The <b>reason</b> and <b>code</b>  
+				<h5>INVITE OK</h5>
+				<pre>Request:
+GET
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+
+Reponse:
+Content-Type: application/json
+{"response":"INVITE_OK","callId":"1.0"}</pre>
+                <h5>INVITE Failed</h5>
+                <pre>Request:
+GET
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+
+Reponse:
+Content-Type: application/json
+{"response":"CALL_FINISHED","callId":"0.0","reason":"INVITE_FAILED","code":486}</pre>
+                <h5>Received a BYE from destination (NVP)</h5>
+                <pre>Request:
+GET
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+
+Reponse:
+Content-Type: application/json
+{"response":"CALL_FINISHED","callId":"0.0","reason":"BYE_RECEIVED"}</pre>
+                <h5>Sent a BYE to destination using sendBye method</h5>
+                <pre>Request:
+GET
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+
+Reponse:
+Content-Type: application/json
+{"response":"CALL_FINISHED","callId":"0.0","reason":"BYE_SENT"}</pre>
+                <h5>Playback finished</h5>
+                <pre>Request:
+GET
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+
+Reponse:
+Content-Type: application/json
+{"response":"PLAY_DONE","callId":"0.0"}</pre>
+            </div>
+		</div>
+	</div>
+</body>
+</html>
+
