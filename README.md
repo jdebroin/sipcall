@@ -8,17 +8,23 @@ It includes a web application to test the functionality: ![sipcall web app scree
 
 ## Install
 
+```
 git clone git@github.com:jdebroin/efflux.git
 cd efflux
 mvn install
+```
 
+```
 git clone git@github.com:jdebroin/sipcall.git
 cd sipcall
 mvn install
+```
 
 ## Run
 
+```
 java -jar target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+```
 
 ## Try it
 
