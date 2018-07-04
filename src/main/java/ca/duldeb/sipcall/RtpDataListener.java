@@ -27,7 +27,7 @@ public class RtpDataListener implements RtpSessionDataListener {
             int size = packet.getDataSize();
             byte[] data = packet.getDataAsArray();
             try {
-                leg.getRecordWriter().write(leg, data, size);
+                leg.writeDataPacket(data, size);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
             }

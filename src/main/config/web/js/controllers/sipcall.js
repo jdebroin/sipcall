@@ -11,8 +11,9 @@ function SipCallCtrl($scope, $http) {
         localRtpPort : 0
     };
     $scope.fromUser = '1';
-    $scope.to = 'sip:4627@mtl-da45-vm1:5060';
-    $scope.recordingDirectory = 'c:\\tmp';
+    $scope.to = 'sip:8492@mtl-blade20-vm216:5090';
+    $scope.sessionId = '';
+    $scope.recordingDirectory = '';
     $scope.playFile = "03-rambling-caller-input-ulaw.ul";
 
     var poll = function() {
@@ -24,7 +25,7 @@ function SipCallCtrl($scope, $http) {
                         setSipCallReason(data.callId, data.response, data.reason, data.code);
                         if (data.response == "INVITE_OK") {
                             if ($scope.recordingDirectory) {
-                                $scope.record(data.callId, $scope.recordingDirectory + "\\in-" + data.callId + ".ul");
+                                $scope.record(data.callId, $scope.recordingDirectory + "in-" + data.callId + ".ul");
                             }
                             if ($scope.playFile) {
                                 $scope.play(data.callId, $scope.playFile);
@@ -87,7 +88,8 @@ function SipCallCtrl($scope, $http) {
     $scope.sendInvite = function() {
         var sendInviteParams = {
             fromUser : $scope.fromUser,
-            to : $scope.to
+            to : $scope.to,
+            sessionId : $scope.sessionId
         };
         var command;
         if ($scope.outboundTo) {
@@ -103,11 +105,11 @@ function SipCallCtrl($scope, $http) {
                     response : "sending INVITE",
                     fromUser : $scope.fromUser,
                     to : $scope.to,
-                    recordFileName : ($scope.recordingDirectory ? $scope.recordingDirectory : "c:\\tmp") + "\\in-" + data.callId + ".ul",
-                    playFileName : ($scope.playFile ? $scope.playFile : "03-rambling-caller-input-ulaw.ul")
+                    recordFileName : ($scope.recordingDirectory ? $scope.recordingDirectory + "in-" + data.callId + ".ul" : ""),
+                    playFileName : ($scope.playFile ? $scope.playFile : "")
                 });
                 if ($scope.recordingDirectory) {
-                    $scope.record(data.callId, $scope.recordingDirectory + "\\in-" + data.callId + ".ul");
+                    $scope.record(data.callId, $scope.recordingDirectory + "in-" + data.callId + ".ul");
                 }
                 if ($scope.playFile) {
                     $scope.play(data.callId, $scope.playFile);
@@ -125,8 +127,8 @@ function SipCallCtrl($scope, $http) {
                     response : "waiting for INVITE",
                     fromUser : "",
                     to : "",
-                    recordFileName : ($scope.recordingDirectory ? $scope.recordingDirectory : "c:\\tmp") + "\\in-" + data.callId + ".ul",
-                    playFileName : ($scope.playFile ? $scope.playFile : "03-rambling-caller-input-ulaw.ul")
+                    recordFileName : ($scope.recordingDirectory ? $scope.recordingDirectory + "in-" + data.callId + ".ul" : ""),
+                    playFileName : ($scope.playFile ? $scope.playFile : "")
                 });
             });
     };

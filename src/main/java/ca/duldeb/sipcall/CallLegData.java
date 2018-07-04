@@ -1,8 +1,10 @@
 package ca.duldeb.sipcall;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ScheduledFuture;
 
@@ -19,6 +21,7 @@ public class CallLegData {
     private String outboundTo;
     private String fromUser;
     private String to;
+    private String sessionId;
     private byte[] localSdp;
     private int localRtpPort;
     private String remoteRtpAddress;
@@ -27,7 +30,6 @@ public class CallLegData {
     private int packetDuration;
     private int packetSize;
     private InputStream input;
-    private OutputStream output;
     private Queue<SipCallTask> tasks = new LinkedList<SipCallTask>();
 
     private Dialog sipDialog;
@@ -36,16 +38,14 @@ public class CallLegData {
     private boolean playing;
     private ScheduledFuture<?> packetSenderHandle;
     private PlayReader playReader;
-    private RecordWriter recordWriter;
+    private List<RecordWriter> recordWriters = new ArrayList<RecordWriter>();
 
-    public CallLegData(int legIndex, int callIndex, CallHandler callHandler, PlayReader playReader,
-            RecordWriter recordWriter) {
+    public CallLegData(int legIndex, int callIndex, CallHandler callHandler, PlayReader playReader) {
         this.legIndex = legIndex;
         this.callIndex = callIndex;
         this.callId = legIndex + "." + callIndex;
         this.callHandler = callHandler;
         this.playReader = playReader;
-        this.recordWriter = recordWriter;
 
         this.outbound = false;
         this.payloadType = 0;
@@ -77,19 +77,19 @@ public class CallLegData {
     public boolean isOutbound() {
         return outbound;
     }
-    
+
     public void setOutbound(boolean outbound) {
         this.outbound = outbound;
     }
-    
+
     public String getOutboundTo() {
         return outboundTo;
     }
-    
+
     public void setOutboundTo(String outboundTo) {
         this.outboundTo = outboundTo;
     }
-    
+
     public int getLocalRtpPort() {
         return localRtpPort;
     }
@@ -146,14 +146,6 @@ public class CallLegData {
         this.input = input;
     }
 
-    public OutputStream getOutput() {
-        return output;
-    }
-
-    public void setOutput(OutputStream output) {
-        this.output = output;
-    }
-
     public Queue<SipCallTask> getTasks() {
         return tasks;
     }
@@ -205,7 +197,7 @@ public class CallLegData {
     public String getFromUser() {
         return fromUser;
     }
-    
+
     public void setFromUser(String fromUser) {
         this.fromUser = fromUser;
     }
@@ -216,6 +208,14 @@ public class CallLegData {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public byte[] getLocalSdp() {
@@ -230,8 +230,20 @@ public class CallLegData {
         return playReader;
     }
 
-    public RecordWriter getRecordWriter() {
-        return recordWriter;
+    public void writeDataPacket(byte[] packetBuffer, int size) throws IOException {
+        for (RecordWriter recordWriter : recordWriters) {
+            recordWriter.write(packetBuffer, size);
+        }
+    }
+
+    public void addRecordWriter(RecordWriter recordWriter) {
+        recordWriters.add(recordWriter);
+    }
+
+    public void removeRecordWriters() throws IOException {
+        for (RecordWriter recordWriter : recordWriters) {
+            recordWriter.close();
+        }
     }
 
 }

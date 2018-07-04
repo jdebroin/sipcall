@@ -81,6 +81,12 @@
 							<input type="text" class="form-control" id="inputTo" ng-model="to" />
                         </div>
 					</div>
+					<div class="form-group">
+						<label class="control-label col-sm-6" for="sessionId">Session Id (optional)</label>
+                        <div class="col-sm-6">
+							<input type="text" class="form-control" id="sessionId" ng-model="sessionId" />
+                        </div>
+					</div>
                     <div class="form-group">
                         <label class="control-label col-sm-6" for="inputOutboundTo">Outbound to SIP url</label>
                         <div class="col-sm-6">
@@ -160,16 +166,38 @@
        </div>
        <div class="row">
             <div class="col-md-12">
-				<h4>Changing logging configuration</h4>
+				<h3>Running SipCall Server</h3>
+				<h4>Use <a href="http://mtl-blade20-vm205:8085">pre-installed SipCall server</a></h4>
+				<h4>Or download <a href="http://mtl-blade20-vm205/test/sipcallserver/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar">sipcall jar</a>
+				and <a href="http://mtl-blade20-vm205/test/sipcallserver/log4j.dev.properties">log4j.dev.properties</a>
+				</h4>
 				<ul>
-					<li>Modify log4j.dev.properties (in src/main/config) if needed</li>
-					<li>Run jar with modified log4j property file: <pre>
-java -Dlog4j.configuration=file:log4j.dev.properties -jar sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar</pre>
+					<li>Run jar: <pre>
+java -Dlog4j.configuration=log4j.dev.properties -jar sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar {http port}</pre>
+				</ul>
+				<h4>Or build SipCall</h4>
+				<ul>
+					<li>Build RTP jar: <pre>
+cd .../tools/efflux
+mvn install</pre>
+					</li>
+					<li>Build SipCall jar: <pre>
+cd .../tools/sipcall
+mvn install</pre>
+					</li>
+					<li>Use all-in-one SipCall jar: <pre>
+target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar</pre>
+					</li>
 				</ul>
 				<h3>SipCall Web Service</h3>
-				<h4>Sample Javascript client</h4>
-                                Sample nodejs scripts using sipcall can be found in the src/main/config/sipcallclient directory. 
+				<h4>Sample client</h4>
+                                lasipcallctrl.js is a sample node.js module to demonstrate how to use SipCallServer to do load tests.
 				<br/>
+                                laagentctrl.js is a sample node.js module to simulate Nuance Automation Assist agents.
+				<br/>
+                                latest.js combines these 2 modules to do an end-to-end load test.
+				<br/>
+                                Download <a href="http://mtl-da55-vm6/sipcallclient">sipcallclient sample</a> to some new directory and check instructions in README.md.
 				<br/>
                                 <h4>Initialize</h4>
 				Call the <b>init</b> method to initialize the SIP and RTP stacks.
@@ -190,7 +218,7 @@ java -Dlog4j.configuration=file:log4j.dev.properties -jar sipcall-0.0.1-SNAPSHOT
                 </ul>
 				<pre>Request:
 POST
-http://localhost:8084/ws/sipcall/init
+http://mtl-da55-vm6:8084/ws/sipcall/init
 Content-Type: application/json
 {"config":{"localSipAddress":"","localSipPort":0,"localRtpPort":0}}</pre>
                 <h4>Send an INVITE</h4>
@@ -207,7 +235,7 @@ Content-Type: application/json
 				methods.
 				<pre>Request:
 POST
-http://localhost:8084/ws/sipcall/sendInvite
+http://mtl-da55-vm6:8084/ws/sipcall/sendInvite
 Content-Type: application/json
 {"fromUser":"1","to":"sip:4627@mtl-da45-vm2"}
 
@@ -220,7 +248,7 @@ Content-Type: application/json
                 Specify the call in the <b>callId</b> parameter.
                 <pre>Request:
 POST
-http://localhost:8084/sipcall/sendBye
+http://mtl-da55-vm6:8084/sipcall/sendBye
 Content-Type: application/json
 {"callId":"1.0"}
 
@@ -235,7 +263,7 @@ Content-Type: application/json
                 Specify the file name in the <b>fileName</b> parameter.
                 <pre>Request:
 POST
-http://localhost:8084/sipcall/record
+http://mtl-da55-vm6:8084/sipcall/record
 Content-Type: application/json
 {"callId":"1.0", "fileName" : "c:/tmp/in-1.0.ul"}
 
@@ -250,7 +278,7 @@ Content-Type: application/json
                 Specify the file name in the <b>fileName</b> parameter.
                 <pre>Request:
 POST
-http://localhost:8084/sipcall/play
+http://mtl-da55-vm6:8084/sipcall/play
 Content-Type: application/json
 {"callId":"1.0", "fileName" : "03-rambling-caller-input-ulaw.ul"}
 
@@ -264,7 +292,7 @@ Content-Type: application/json
 				<h5>INVITE OK</h5>
 				<pre>Request:
 GET
-http://localhost:8084/sipcall/poll?timeoutMs=30000
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -272,7 +300,7 @@ Content-Type: application/json
                 <h5>INVITE Failed</h5>
                 <pre>Request:
 GET
-http://localhost:8084/sipcall/poll?timeoutMs=30000
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -280,7 +308,7 @@ Content-Type: application/json
                 <h5>Received a BYE from destination (NVP)</h5>
                 <pre>Request:
 GET
-http://localhost:8084/sipcall/poll?timeoutMs=30000
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -288,7 +316,7 @@ Content-Type: application/json
                 <h5>Sent a BYE to destination using sendBye method</h5>
                 <pre>Request:
 GET
-http://localhost:8084/sipcall/poll?timeoutMs=30000
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -296,7 +324,7 @@ Content-Type: application/json
                 <h5>Playback finished</h5>
                 <pre>Request:
 GET
-http://localhost:8084/sipcall/poll?timeoutMs=30000
+http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json

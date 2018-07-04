@@ -45,7 +45,7 @@ public class RtpLayer {
             int localPort = defaultLocalPort;
             if (localPort == 0) {
                 maxAttempts = 100;
-                localPort = 49152 + (int)(Math.random() * ((65535 - 49152) + 1));
+                localPort = 49152 + (int)(Math.random() * (65535 - 49152));
             } else {
                 maxAttempts = 1;
             }

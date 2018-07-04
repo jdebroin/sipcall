@@ -95,8 +95,12 @@ public class StandaloneCallHandler implements CallHandler {
     private void doNextTask(CallLegData leg) {
         while (!leg.getTasks().isEmpty()) {
             SipCallTask next = leg.getTasks().remove();
-            if (next.doIt(callManager, leg)) {
-                return;
+            try {
+                if (next.doIt(callManager, leg)) {
+                    return;
+                }
+            } catch (ApplicationErrorException e) {
+                LOGGER.error("Task failed", e);
             }
         }
         LOGGER.debug("no more tasks");

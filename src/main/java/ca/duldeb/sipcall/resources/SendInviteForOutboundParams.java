@@ -4,6 +4,7 @@ public class SendInviteForOutboundParams {
     private int legIndex;
     private String fromUser;
     private String to;
+    private String sessionId;
     private String outboundTo;
 
     public String getFromUser() {
@@ -28,6 +29,14 @@ public class SendInviteForOutboundParams {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String getOutboundTo() {

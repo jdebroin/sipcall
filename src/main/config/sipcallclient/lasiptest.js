@@ -1,25 +1,30 @@
+// Place SIP calls
+//
+
+if (process.argv.length < 5) {
+    console.log('usage: nbCallsToPlace nbSimultaneousCallsToPlace sipCallServerHost sipTo');
+    console.log('example: 100 10 http://mtl-blade20-vm205:8085/ sip:4622@mtl-mrcp16-vm02:5060');
+    return;
+}
 var LASipCallCtrl = require('./lasipcallctrl.js');
 var util = require('util');
 
-if (process.argv.length < (2 + 3)) {
-    console.log("Usage: node lasiptest.js nbCallsToPlace nbSimultaneousCallsToPlace sip:4617@mtl-mrcp16-vm02:5060");
-    return 1;
-}
-
 var sipCallCtrlOptions = {
+    nbCallsToPlace : parseInt(process.argv[2]),
+    nbSimultaneousCallsToPlace : parseInt(process.argv[3]),
     //host : 'http://localhost:8085/',
     //host : 'http://mtl-da55-vm6:8084/',
-    host : 'http://mtl-blade20-vm205:8085/',
+    //host : 'http://mtl-blade20-vm205:8085/',
+    host: process.argv[4],
+    //to : 'sip:4638@mtl-mrcp16-vm02:5060',
+    // SPRINT_POC
+    //to : 'sip:4622@mtl-mrcp16-vm02:5060',
+    //to : 'sip:4627@mtl-da45-vm1:5060',
+    to : process.argv[5],
     config : {
         localSipAddress : "",
         localSipPort : 5062
     },
-    to : process.argv[4],
-    // SPRINT_POC
-    //to : 'sip:4622@mtl-mrcp16-vm02:5060',
-    //to : 'sip:4627@mtl-da45-vm1:5060',
-    nbCallsToPlace : parseInt(process.argv[2]),
-    nbSimultaneousCallsToPlace : parseInt(process.argv[3]),
     minDelayBeforeInvite : 3000,
     maxDelayBeforeInvite : 3000,
     minDelayBeforeBye : 12000,

@@ -36,6 +36,7 @@ function LASipCallCtrl(params) {
     this.inShutdown = true;
     this.sipcalls = [];
     this.timeouts = {};
+    this.callData = {};
     this.nbCallsPlaced = 0;
     this.nbCallsSucceeded = 0;
     this.nbCallsFinished = 0;
@@ -143,9 +144,23 @@ LASipCallCtrl.prototype.poll = function() {
                     } else if (data.response == 'PLAY_DONE') {
                         self.playDone(data.callId);
                     } else if (data.response == 'CALL_FINISHED') {
+                        if (data.callId in self.timeouts && 'inviteOkTimeout' in self.timeouts[data.callId]) {
+                            clearTimeout(self.timeouts[data.callId]['inviteOkTimeout']);
+                            delete self.timeouts[data.callId]['inviteOkTimeout'];
+                        }
+                        if (data.callId in self.timeouts && 'startPlayTimeout' in self.timeouts[data.callId]) {
+                            clearTimeout(self.timeouts[data.callId]['startPlayTimeout']);
+                            delete self.timeouts[data.callId]['startPlayTimeout'];
+                        }
                         if (data.callId in self.timeouts && 'sendByeTimeout' in self.timeouts[data.callId]) {
                             clearTimeout(self.timeouts[data.callId]['sendByeTimeout']);
                             delete self.timeouts[data.callId]['sendByeTimeout'];
+                        }
+                        if (data.callId in self.callData) {
+                            var callDatum = self.callData[data.callId];
+                            if (callDatum.state === 'PLAY_STARTED' && data.reason === 'BYE_RECEIVED') {
+                                callDatum.state = 'NORMAL_DISCONNECT';
+                            }
                         }
                         self.callFinished(null, data.callId);
                     }
@@ -210,10 +225,15 @@ LASipCallCtrl.prototype.sendInvite = function(fromUser, callback) {
             callId : data.callId,
             timeouts : {}
         });
+        var callDatum = {};
+        callDatum.state = 'SENDING_INVITE';
+        callDatum.fromUser = sendInviteParams.fromUser;
+        self.callData[data.callId] = callDatum;
         var timeout = 36000;
         var timeoutId = setTimeout(function(callId) {
             self.log(callId + " timeout waiting for invite(fromUser=" + sendInviteParams.fromUser + ", to=" + sendInviteParams.to + ")");
-            throw "fatal, timeout waiting for invite response";
+            callback('timeout');
+            return;
         }, timeout, data.callId);
         self.setTimeoutId(data.callId, 'inviteOkTimeout', timeoutId);
         callback(null);
@@ -272,18 +292,34 @@ LASipCallCtrl.prototype.play = function(callId, fileName, callback) {
 
 LASipCallCtrl.prototype.inviteOk = function(callId) {
     var self = this;
+    if (callId in self.callData) {
+        var callDatum = self.callData[callId];
+        if (callDatum.state === 'SENDING_INVITE') {
+            callDatum.state = 'CONNECTED';
+        }
+    }
     var recordFileName = self.recordFileNamePrefix + "in-" + callId + ".ul";
     self.record(callId, recordFileName, function(error, result) {
         if (error) {
             self.inCallError(error, callId);
             return;
         }
-        self.play(callId, self.playFileName, function(error, result) {
-            if (error) {
-                self.inCallError(error, callId);
-                return;
-            }
-        });
+        var timeout = 2000;
+        var timeoutId = setTimeout(function(callId) {
+            self.play(callId, self.playFileName, function(error, result) {
+                if (error) {
+                    self.inCallError(error, callId);
+                    return;
+                }
+                if (callId in self.callData) {
+                    var callDatum = self.callData[callId];
+                    if (callDatum.state === 'CONNECTED') {
+                        callDatum.state = 'PLAY_STARTED';
+                    }
+                }
+            });
+        }, timeout, callId);
+        self.setTimeoutId(callId, 'startPlayTimeout', timeoutId);
     });
 };
 
@@ -295,6 +331,19 @@ LASipCallCtrl.prototype.playDone = function(callId) {
 LASipCallCtrl.prototype.callFinished = function(error, callId) {
     var self = this;
     self.nbCallsFinished++;
+    if (callId && callId in self.callData) {
+        var callDatum = self.callData[callId];
+        if (callDatum.state === 'NORMAL_DISCONNECT') {
+            self.nbCallsSucceeded++;
+            if (self.callsSucceededCB) {
+                self.callsSucceededCB();
+            }
+        } else {
+            self.log(callId + " from=" + callDatum.fromUser + ", state=" + callDatum.state);
+        }
+        delete self.callData[callId];
+    }
+    self.log("callsPlaced=" + self.nbCallsPlaced + ", callsToPlace=" + self.nbCallsToPlace);
     if (!error && self.nbCallsPlaced < self.nbCallsToPlace) {
         self.placeCall();
     } else if (self.nbCallsFinished >= self.nbCallsPlaced) {
@@ -337,26 +386,15 @@ LASipCallCtrl.prototype.placeCall = function() {
     setTimeout(function() {
         self.sendInvite(fromUser, function(error) {
             if (error) {
-                self.placeCallError(error);
+                self.callFinished(error);
                 return;
             }
         });
     }, timeout);
 };
 
-LASipCallCtrl.prototype.placeCallError = function() {
-    var self = this;
-    if (self.nbCallsFinished >= self.nbCallsPlaced) {
-        self.shutdown();
-    }
-};
-
 LASipCallCtrl.prototype.finishCall = function(callId) {
     var self = this;
-    self.nbCallsSucceeded++;
-    if (self.callsSucceededCB) {
-        self.callsSucceededCB();
-    }
     var timeout = Math.floor(self.minDelayBeforeBye + Math.random() * (self.maxDelayBeforeBye - self.minDelayBeforeBye));
     var timeoutId = setTimeout(function(callId) {
         self.sendBye(callId, function(error) {

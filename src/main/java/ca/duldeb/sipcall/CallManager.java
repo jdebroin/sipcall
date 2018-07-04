@@ -3,13 +3,10 @@ package ca.duldeb.sipcall;
 import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -38,6 +35,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CallManager {
     private static final Log LOGGER = getLog(SipCall.class);
 
+    private static RecordWriter audioDestination;
+
     private SipCallConfig config;
     private SipLayer sipLayer;
     private HashedWheelTimer timer;
@@ -46,7 +45,6 @@ public class CallManager {
 
     private CallHandler callHandler;
     private PlayReader playReader;
-    private RecordWriter recordReader;
 
     private AtomicInteger callIndex = new AtomicInteger(0);
     private ConcurrentHashMap<String, CallLegData> calls = new ConcurrentHashMap<String, CallLegData>();
@@ -80,7 +78,6 @@ public class CallManager {
     public void init(CallHandler callHandler) throws ApplicationErrorException {
         this.callHandler = callHandler;
         this.playReader = new BufferPlayReader();
-        this.recordReader = new BufferRecordWriter();
 
         try {
             if (config.getLocalSipAddress() == null || config.getLocalSipAddress() == "") {
@@ -136,7 +133,7 @@ public class CallManager {
     }
 
     public CallLegData createCallLegData(int legIndex, int callIndex) {
-        CallLegData leg = new CallLegData(legIndex, callIndex, callHandler, playReader, recordReader);
+        CallLegData leg = new CallLegData(legIndex, callIndex, callHandler, playReader);
         calls.put(leg.getCallId(), leg);
         LOGGER.debug(leg.getName() + " created");
         return leg;
@@ -245,32 +242,28 @@ public class CallManager {
         return bytesRead;
     }
 
-    public void write(CallLegData leg, byte[] packetBuffer, int size) throws IOException {
-        if (leg.getOutput() != null) {
-            int offset = 0;
-            leg.getOutput().write(packetBuffer, offset, size);
-        }
-    }
-
-    public boolean doPlay(CallLegData leg, String fileName) {
+    public boolean doPlay(CallLegData leg, String fileName) throws ApplicationErrorException {
         endPlay(leg);
         LOGGER.debug(leg.getName() + " playing from " + fileName);
         //leg.setInput(new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream(fileName)));
         try {
             leg.setInput(new BufferedInputStream(new FileInputStream(fileName)));
         } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage(),e);
+            throw new ApplicationErrorException(leg.getName() + " error playing " + fileName, e);
         }
         return true;
     }
 
-    public void doRecord(CallLegData leg, String fileName) {
+    public void doRecord(CallLegData leg, String fileName) throws ApplicationErrorException {
         endRecord(leg);
+        if (audioDestination != null) {
+            leg.addRecordWriter(audioDestination);
+        }
         LOGGER.debug(leg.getName() + " recording to " + fileName);
         try {
-            leg.setOutput(new BufferedOutputStream(new FileOutputStream(fileName)));
+            leg.addRecordWriter(new BufferRecordWriter(fileName));
         } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
+            throw new ApplicationErrorException(leg.getName() + " error recording to " + fileName, e);
         }
     }
 
@@ -303,19 +296,23 @@ public class CallManager {
     }
 
     private void endRecord(CallLegData leg) {
-        OutputStream out = leg.getOutput();
-        if (out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-            leg.setOutput(null);
+        try {
+            leg.removeRecordWriters();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
     public CallLegData getCall(String callId) {
         return calls.get(callId);
+    }
+
+    public static void addAudioDestination(RecordWriter audioDestination) {
+        CallManager.audioDestination = audioDestination;
+    }
+
+    public static void removeAudioDestination(RecordWriter audioDestination) {
+        CallManager.audioDestination = null;
     }
 
 }

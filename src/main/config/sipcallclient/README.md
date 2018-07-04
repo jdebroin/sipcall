@@ -2,6 +2,10 @@
 
 lasipcallctrl.js is a sample node.js module to demonstrate how to use SipCallServer to do load tests.
 
+laagentctrl.js is a sample node.js module to simulate Nuance Automation Assist agents.
+
+latest.js combines these 2 modules to do an end-to-end load test.
+
 ## Install
 
 Download these files to some empty directory and run:
@@ -10,7 +14,17 @@ Download these files to some empty directory and run:
 
 ## Configuration:
 
-Edit:
+Edit the latest.js file:
+
+```javascript
+var agentCtrlOptions = {
+    nbAgents : 10,
+    agentOptions : {
+        host : 'https://mtl-mrcp16-vm01:8443/',
+        minDelayBeforeSendOutcome : 3000,
+        maxDelayBeforeSendOutcome : 6000
+    }
+};
 
 var sipCallCtrlOptions = {
     //host : 'http://localhost:8084/',
@@ -29,4 +43,4 @@ var sipCallCtrlOptions = {
 
 ## Run
 
-    node lasipcallctrl.js
+    node latest.js

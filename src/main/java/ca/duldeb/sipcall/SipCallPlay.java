@@ -17,7 +17,7 @@ public class SipCallPlay implements SipCallTask {
     }
 
     @Override
-    public boolean doIt(CallManager callManager, CallLegData leg) {
+    public boolean doIt(CallManager callManager, CallLegData leg) throws ApplicationErrorException {
         return callManager.doPlay(leg, fileName);
     }
 

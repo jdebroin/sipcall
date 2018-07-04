@@ -61,6 +61,7 @@ public class SipCallResource {
             throw new ApplicationErrorException("Not initialized");
         }
         CallLegData leg = callManager.createCallLegData(params.getLegIndex());
+        leg.setSessionId(params.getSessionId());
         callManager.doSendInvite(leg, params.getFromUser(), params.getTo());
         return new SendInviteResult(leg.getCallId());
     }
@@ -77,6 +78,7 @@ public class SipCallResource {
         CallLegData leg = callManager.createCallLegData(params.getLegIndex());
         leg.setOutbound(true);
         leg.setOutboundTo(params.getOutboundTo());
+        leg.setSessionId(params.getSessionId());
         callManager.doSendInvite(leg, params.getFromUser(), params.getTo());
         return new SendInviteResult(leg.getCallId());
     }

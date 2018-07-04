@@ -9,6 +9,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import ca.duldeb.sipcall.resources.SipCallWebSocketServlet;
+
 public class SipCallServer {
 
     public static void main(String[] args) throws URISyntaxException {
@@ -36,8 +38,13 @@ public class SipCallServer {
         staticServletHolder.setInitParameter("resourceBase", staticResourceBase);
         context.addServlet(staticServletHolder, "/*");
 
+        SipCallWebSocketServlet webSocketServlet = new SipCallWebSocketServlet();
+        ServletHolder webSocketServletHolder = new ServletHolder(webSocketServlet);
+        context.addServlet(webSocketServletHolder, "/socket");
+
         try {
             server.start();
+            System.out.println("SipCallServer HTTP server listening on port " + port);
             server.join();
         } catch (Exception e) {
             e.printStackTrace();

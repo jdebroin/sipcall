@@ -17,7 +17,7 @@ public class SipCallRecord implements SipCallTask {
     }
 
     @Override
-    public boolean doIt(CallManager callManager, CallLegData leg) {
+    public boolean doIt(CallManager callManager, CallLegData leg) throws ApplicationErrorException {
         callManager.doRecord(leg, fileName);
         return false; // Don't wait
     }

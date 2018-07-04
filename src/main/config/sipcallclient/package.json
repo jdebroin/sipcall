@@ -3,6 +3,7 @@
   "description": "SIP Call Client",
   "dependencies": {
     "request": "*",
-    "ws":"*"
+    "ws":"*",
+    "node-xml-lite":"*"
   }
 }

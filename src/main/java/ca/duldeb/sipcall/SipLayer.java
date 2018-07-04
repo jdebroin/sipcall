@@ -209,6 +209,11 @@ public class SipLayer implements SipListener {
             request.addHeader(outboundTo);
         }
 
+        if (leg.getSessionId() != null && !leg.getSessionId().isEmpty()) {
+            Header sessionId = headerFactory.createHeader("P-Nuance-Session-ID", leg.getSessionId());
+            request.addHeader(sessionId);
+        }
+        
         ContentTypeHeader contentTypeHeader = headerFactory.createContentTypeHeader("application", "sdp");
         request.setContent(sdp, contentTypeHeader);
 
@@ -422,6 +427,28 @@ public class SipLayer implements SipListener {
             leg.getCallHandler().handleInviteOk(leg);
 
         } else if (method.equals(Request.BYE)) {
+            Response okResponse = null;
+            try {
+                okResponse = messageFactory.createResponse(Response.OK, request);
+            } catch (ParseException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+            ServerTransaction serverTransaction = null;
+            if (okResponse != null) {
+                serverTransaction = event.getServerTransaction();
+                if (serverTransaction == null) {
+                    LOGGER.error("server transaction unavailable");
+                }
+            }
+            if (serverTransaction != null) {
+                try {
+                    serverTransaction.sendResponse(okResponse);
+                } catch (SipException e) {
+                    LOGGER.error(e.getMessage(), e);
+                } catch (InvalidArgumentException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
             handleBye(leg);
             detachLeg(leg);
         }
