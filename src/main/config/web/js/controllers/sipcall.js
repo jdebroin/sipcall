@@ -14,8 +14,19 @@ function SipCallCtrl($scope, $http) {
     $scope.to = 'sip:jacques@mt-jdebroin10:5060';
     $scope.sessionId = '';
     $scope.recordingDirectory = '';
-    $scope.playFile = "03-rambling-caller-input-ulaw.ul";
+    $scope.playFile = '';
 
+    function wsOk() {
+    	$scope.errorMessage = "";
+    }
+    
+    function wsError(data, status) {
+        $scope.errorMessage = "status=" + status;
+        if (data && data.message) {
+        	$scope.errorMessage += " -> " + data.message;
+        }
+    }
+    
     var poll = function() {
         $http.get('/ws/sipcall/poll?timeoutMs=30000').
             success(function(data) {
@@ -35,10 +46,8 @@ function SipCallCtrl($scope, $http) {
 
                     poll();
                 }
-            }).
-            error(function(data, status) {
-                $scope.errorMessage = "poll failed, status=" + status;
-            });
+            })
+            .error(wsError);
     };
     
     var setSipCallReason = function(callId, response, reason, code) {
@@ -66,12 +75,14 @@ function SipCallCtrl($scope, $http) {
         $scope.errorMessage = "";
         $http.post('/ws/sipcall/init', initParams).
             success(function(data) {
+            	wsOk();
                 $scope.inInit = false;
                 $scope.initialized = true;
                 poll();
-            }).
-            error(function(data, status) {
-                $scope.errorMessage = "init failed, status=" + status;
+            })
+            .error(function(data, status) {
+            	$scope.inInit = false;
+                wsError(data, status);
             });
     };
 
@@ -79,10 +90,17 @@ function SipCallCtrl($scope, $http) {
         $scope.inShutdown = true;
         $http.post('/ws/sipcall/shutdown').
             success(function() {
+            	wsOk();
                 $scope.inShutdown = false;
                 $scope.initialized = false;
                 $scope.sipcalls = [];
-            });
+            })
+	        .error(function(data, status) {
+	        	$scope.inShutdown = false;
+                $scope.initialized = false;
+                $scope.sipcalls = [];
+	            wsError(data, status);
+	        });
     };
 
     $scope.sendInvite = function() {
@@ -100,6 +118,7 @@ function SipCallCtrl($scope, $http) {
         }
         $http.post(command, sendInviteParams).
             success(function(data) {
+            	wsOk();
                 $scope.sipcalls.unshift({
                     callId : data.callId,
                     response : "sending INVITE",
@@ -114,7 +133,8 @@ function SipCallCtrl($scope, $http) {
                 if ($scope.playFile) {
                     $scope.play(data.callId, $scope.playFile);
                 }
-            });
+            })
+            .error(wsError);
     };
 
     $scope.waitForInvite = function() {
@@ -122,6 +142,7 @@ function SipCallCtrl($scope, $http) {
         };
         $http.post('/ws/sipcall/waitForInvite', waitForInviteParams).
             success(function(data) {
+            	wsOk();
                 $scope.sipcalls.unshift({
                     callId : data.callId,
                     response : "waiting for INVITE",
@@ -130,7 +151,8 @@ function SipCallCtrl($scope, $http) {
                     recordFileName : ($scope.recordingDirectory ? $scope.recordingDirectory + "in-" + data.callId + ".ul" : ""),
                     playFileName : ($scope.playFile ? $scope.playFile : "")
                 });
-            });
+            })
+            .error(wsError);
     };
 
     $scope.sendBye = function(callId) {
@@ -140,7 +162,9 @@ function SipCallCtrl($scope, $http) {
         setSipCallReason(callId, "sending BYE");
         $http.post('/ws/sipcall/sendBye', sendByeParams).
             success(function(data) {
-            });
+            	wsOk();
+            })
+            .error(wsError);
     };
 
     $scope.record = function(callId, fileName) {
@@ -150,7 +174,9 @@ function SipCallCtrl($scope, $http) {
         };
         $http.post('/ws/sipcall/record', sendRecordParams).
             success(function(data) {
-            });
+            	wsOk();
+            })
+            .error(wsError);
     };
 
     $scope.play = function(callId, fileName) {
@@ -161,7 +187,9 @@ function SipCallCtrl($scope, $http) {
         setSipCallReason(callId, "playing");
         $http.post('/ws/sipcall/play', sendPlayParams).
             success(function(data) {
-            });
+            	wsOk();
+            })
+            .error(wsError);
     };
 
     $scope.sendDtmf = function(callId, dtmf) {
@@ -172,7 +200,9 @@ function SipCallCtrl($scope, $http) {
         setSipCallReason(callId, "dtmf");
         $http.post('/ws/sipcall/sendDtmf', sendDtmfParams).
             success(function(data) {
-            });
+            	wsOk();
+            })
+            .error(wsError);
     };
 
     $scope.isCallActive = function(sipcall) {

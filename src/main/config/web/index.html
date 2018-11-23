@@ -173,39 +173,31 @@
        <div class="row">
             <div class="col-md-12">
 				<h3>Running SipCall Server</h3>
-				<h4>Use <a href="http://mtl-blade20-vm205:8085">pre-installed SipCall server</a></h4>
-				<h4>Or download <a href="http://mtl-blade20-vm205/test/sipcallserver/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar">sipcall jar</a>
-				and <a href="http://mtl-blade20-vm205/test/sipcallserver/log4j.dev.properties">log4j.dev.properties</a>
-				</h4>
 				<ul>
-					<li>Run jar: <pre>
-java -Dlog4j.configuration=log4j.dev.properties -jar sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar {http port}</pre>
-				</ul>
-				<h4>Or build SipCall</h4>
-				<ul>
-					<li>Build RTP jar: <pre>
-cd .../tools/efflux
-mvn install</pre>
+					<li>Build RTP jar:
+<pre>git clone git@github.com:jdebroin/efflux.git 
+cd efflux
+mvn install
+cd ..
+</pre>
 					</li>
-					<li>Build SipCall jar: <pre>
-cd .../tools/sipcall
-mvn install</pre>
+					<li>Build SipCall jar:
+<pre>git clone git@github.com:jdebroin/sipcall.git
+cd sipcall
+mvn install
+cd ..
+</pre>
 					</li>
-					<li>Use all-in-one SipCall jar: <pre>
-target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar</pre>
+					<li>Use all-in-one SipCall jar:
+<pre>nohup java -Dlog4j.configuration=log4j.dev.properties -jar sipcall/target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar 8085
+</pre>
 					</li>
 				</ul>
 				<h3>SipCall Web Service</h3>
 				<h4>Sample client</h4>
-                                lasipcallctrl.js is a sample node.js module to demonstrate how to use SipCallServer to do load tests.
-				<br/>
-                                laagentctrl.js is a sample node.js module to simulate Nuance Automation Assist agents.
-				<br/>
-                                latest.js combines these 2 modules to do an end-to-end load test.
-				<br/>
-                                Download <a href="http://mtl-da55-vm6/sipcallclient">sipcallclient sample</a> to some new directory and check instructions in README.md.
-				<br/>
-                                <h4>Initialize</h4>
+<pre>sipcall/src/main/config/sipcallclient
+</pre>                
+                <h4>Initialize</h4>
 				Call the <b>init</b> method to initialize the SIP and RTP stacks.
 				<ul>
 				<li>
@@ -224,7 +216,7 @@ target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar</pre>
                 </ul>
 				<pre>Request:
 POST
-http://mtl-da55-vm6:8084/ws/sipcall/init
+http://SIPCALL_WS_HOST/ws/sipcall/init
 Content-Type: application/json
 {"config":{"localSipAddress":"","localSipPort":0,"localRtpPort":0}}</pre>
                 <h4>Send an INVITE</h4>
@@ -241,7 +233,7 @@ Content-Type: application/json
 				methods.
 				<pre>Request:
 POST
-http://mtl-da55-vm6:8084/ws/sipcall/sendInvite
+http://SIPCALL_WS_HOST/ws/sipcall/sendInvite
 Content-Type: application/json
 {"fromUser":"1","to":"sip:4627@mtl-da45-vm2"}
 
@@ -254,7 +246,7 @@ Content-Type: application/json
                 Specify the call in the <b>callId</b> parameter.
                 <pre>Request:
 POST
-http://mtl-da55-vm6:8084/sipcall/sendBye
+http://SIPCALL_WS_HOST/sipcall/sendBye
 Content-Type: application/json
 {"callId":"1.0"}
 
@@ -269,7 +261,7 @@ Content-Type: application/json
                 Specify the file name in the <b>fileName</b> parameter.
                 <pre>Request:
 POST
-http://mtl-da55-vm6:8084/sipcall/record
+http://SIPCALL_WS_HOST/sipcall/record
 Content-Type: application/json
 {"callId":"1.0", "fileName" : "c:/tmp/in-1.0.ul"}
 
@@ -284,9 +276,24 @@ Content-Type: application/json
                 Specify the file name in the <b>fileName</b> parameter.
                 <pre>Request:
 POST
-http://mtl-da55-vm6:8084/sipcall/play
+http://SIPCALL_WS_HOST/sipcall/play
 Content-Type: application/json
 {"callId":"1.0", "fileName" : "03-rambling-caller-input-ulaw.ul"}
+
+Reponse:
+Content-Type: application/json
+{"callId":"1.0"}</pre>
+                <h4>Send a DTMF</h4>
+                Send a DTMF by calling the <b>sendDtmf</b> method.
+                <br/>
+                Specify the call in the <b>callId</b> parameter.
+                <br/>
+                Specify the DTMF (0-9, *, #) in the <b>DTMF</b> parameter.
+                <pre>Request:
+POST
+http://SIPCALL_WS_HOST/sipcall/sendDtmf
+Content-Type: application/json
+{"callId":"1.0", "dtmf" : "2"}
 
 Reponse:
 Content-Type: application/json
@@ -298,7 +305,7 @@ Content-Type: application/json
 				<h5>INVITE OK</h5>
 				<pre>Request:
 GET
-http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+http://SIPCALL_WS_HOST/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -306,7 +313,7 @@ Content-Type: application/json
                 <h5>INVITE Failed</h5>
                 <pre>Request:
 GET
-http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+http://SIPCALL_WS_HOST/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -314,7 +321,7 @@ Content-Type: application/json
                 <h5>Received a BYE from destination (NVP)</h5>
                 <pre>Request:
 GET
-http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+http://SIPCALL_WS_HOST/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -322,7 +329,7 @@ Content-Type: application/json
                 <h5>Sent a BYE to destination using sendBye method</h5>
                 <pre>Request:
 GET
-http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+http://SIPCALL_WS_HOST/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json
@@ -330,7 +337,7 @@ Content-Type: application/json
                 <h5>Playback finished</h5>
                 <pre>Request:
 GET
-http://mtl-da55-vm6:8084/sipcall/poll?timeoutMs=30000
+http://SIPCALL_WS_HOST/sipcall/poll?timeoutMs=30000
 
 Reponse:
 Content-Type: application/json

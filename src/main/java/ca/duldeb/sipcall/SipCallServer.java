@@ -28,8 +28,10 @@ public class SipCallServer {
 
         ServletContainer servletContainer = new ServletContainer();
         ServletHolder servletHolder = new ServletHolder(servletContainer);
-        servletHolder.setInitParameter(org.glassfish.jersey.server.ServerProperties.PROVIDER_PACKAGES,
-                "ca.duldeb.sipcall.resources");
+        //servletHolder.setInitParameter(org.glassfish.jersey.server.ServerProperties.PROVIDER_PACKAGES,
+        //        "ca.duldeb.sipcall.resources");
+        servletHolder.setInitParameter(org.glassfish.jersey.server.ServerProperties.PROVIDER_CLASSNAMES,
+                  "ca.duldeb.sipcall.resources.SipCallResource, ca.duldeb.sipcall.resources.ApplicationErrorExceptionMapper");
         context.addServlet(servletHolder, "/ws/*");
 
         ServletHolder staticServletHolder = new ServletHolder("default", DefaultServlet.class);

@@ -89,7 +89,6 @@ public class SipLayer implements SipListener {
 
         Properties properties = new Properties();
         properties.setProperty("javax.sip.STACK_NAME", "SipCall");
-        properties.setProperty("javax.sip.IP_ADDRESS", this.ip);
         sipStack = sipFactory.createSipStack(properties);
 
         headerFactory = sipFactory.createHeaderFactory();
@@ -112,7 +111,7 @@ public class SipLayer implements SipListener {
         while (udp == null) {
             try {
                 i++;
-                udp = sipStack.createListeningPoint(this.port, "udp");
+                udp = sipStack.createListeningPoint(this.ip, this.port, "udp");
             } catch (InvalidArgumentException e) {
                 if (i < maxAttempts) {
                     LOGGER.info("Error creating listening point on port " + this.port + ": " + e.getMessage());
@@ -188,7 +187,8 @@ public class SipLayer implements SipListener {
 
         CallIdHeader callIdHeader = sipProvider.getNewCallId();
 
-        CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(1, Request.INVITE);
+        long sequenceNumber = 1;
+        CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(sequenceNumber, Request.INVITE);
 
         MaxForwardsHeader maxForwards = headerFactory.createMaxForwardsHeader(70);
 
@@ -254,6 +254,7 @@ public class SipLayer implements SipListener {
             if (remoteSdp.getConnection() != null) {
                 leg.setRemoteRtpAddress(remoteSdp.getConnection().getAddress());
             }
+            @SuppressWarnings("unchecked")
             Vector<MediaDescription> remoteMedias = remoteSdp.getMediaDescriptions(false); // parse, don't create
             for (Enumeration<MediaDescription> e = remoteMedias.elements(); e.hasMoreElements();) {
                 MediaDescription remoteMediaDesc = e.nextElement();
@@ -459,7 +460,6 @@ public class SipLayer implements SipListener {
         Response response = event.getResponse();
         LOGGER.debug("Got " + response.toString());
 
-        ClientTransaction clientTransaction = event.getClientTransaction();
         Dialog dialog = event.getDialog();
         CallLegData leg = (dialog != null) ? (CallLegData) dialog.getApplicationData() : null;
 

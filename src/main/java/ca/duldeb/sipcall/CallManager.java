@@ -92,7 +92,7 @@ public class CallManager {
         LOGGER.info("localSipAddress=" + config.getLocalSipAddress());
         try {
             sipLayer = new SipLayer(config.getLocalSipAddress(), config.getLocalSipPort());
-            LOGGER.info("SipLayer listening on " + config.getLocalSipAddress() + ":" + config.getLocalSipPort());
+            LOGGER.info("SipLayer listening on " + sipLayer.getHost() + ":" + sipLayer.getPort());
         } catch (PeerUnavailableException e) {
             LOGGER.error(e.getMessage(), e);
             throw new ApplicationErrorException("Error creating SipLayer", e);

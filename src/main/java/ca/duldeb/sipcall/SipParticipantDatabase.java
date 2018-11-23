@@ -161,14 +161,12 @@ public class SipParticipantDatabase implements ParticipantDatabase {
             RtpParticipant participant = this.members.get(packet.getSsrc());
             if (participant == null) {
                 // Iterate through the receivers, trying to find a match for this participant through the RTP ports.
-                boolean isReceiver = false;
                 for (RtpParticipant receiver : this.receivers) {
                     if (receiver.getDataDestination().equals(origin)) {
                         // Will be added to the members list.
                         receiver.getInfo().setSsrc(packet.getSsrc());
                         participant = receiver;
                         participant.setLastDataOrigin(origin);
-                        isReceiver = true;
                         break;
                     }
                 }
@@ -203,7 +201,6 @@ public class SipParticipantDatabase implements ParticipantDatabase {
             if (participant == null) {
                 // Iterate through the receivers, trying to find a match for this participant through the RTCP ports or
                 // CNAME.
-                boolean isReceiver = false;
                 for (RtpParticipant receiver : this.receivers) {
                     // Verify if CNAME is the same
                     boolean equalCname = false;
@@ -221,7 +218,6 @@ public class SipParticipantDatabase implements ParticipantDatabase {
                         participant.setLastControlOrigin(origin);
                         participant.receivedSdes();
                         participant.getInfo().updateFromSdesChunk(chunk);
-                        isReceiver = true;
                         break;
                     }
                 }
