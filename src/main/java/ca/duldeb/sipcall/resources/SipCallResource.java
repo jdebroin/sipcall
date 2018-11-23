@@ -144,6 +144,22 @@ public class SipCallResource {
         return new RecordResult(leg.getCallId());
     }
 
+    @Path("/sendDtmf")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public SendDtmfResult sendDtmf(SendDtmfParams params) throws ApplicationErrorException {
+        LOGGER.info("record");
+        if (callManager == null) {
+            throw new ApplicationErrorException("Not initialized");
+        }
+        CallLegData leg = callManager.getCall(params.getCallId());
+        if (leg == null)
+            throw new IllegalArgumentException("no leg matches callId " + params.getCallId());
+        callManager.doSendDtmf(leg, params.getDtmf());
+        return new SendDtmfResult(leg.getCallId());
+    }
+
     @Path("/poll")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

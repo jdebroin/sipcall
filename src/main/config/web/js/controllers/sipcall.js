@@ -11,7 +11,7 @@ function SipCallCtrl($scope, $http) {
         localRtpPort : 0
     };
     $scope.fromUser = '1';
-    $scope.to = 'sip:8492@mtl-blade20-vm216:5090';
+    $scope.to = 'sip:jacques@mt-jdebroin10:5060';
     $scope.sessionId = '';
     $scope.recordingDirectory = '';
     $scope.playFile = "03-rambling-caller-input-ulaw.ul";
@@ -160,6 +160,17 @@ function SipCallCtrl($scope, $http) {
         };
         setSipCallReason(callId, "playing");
         $http.post('/ws/sipcall/play', sendPlayParams).
+            success(function(data) {
+            });
+    };
+
+    $scope.sendDtmf = function(callId, dtmf) {
+        var sendDtmfParams = {
+            callId : callId,
+            dtmf : dtmf
+        };
+        setSipCallReason(callId, "dtmf");
+        $http.post('/ws/sipcall/sendDtmf', sendDtmfParams).
             success(function(data) {
             });
     };

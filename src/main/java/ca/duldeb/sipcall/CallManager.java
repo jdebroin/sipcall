@@ -159,10 +159,15 @@ public class CallManager {
         createRtpSession(leg);
 
         String sdpData;
-        sdpData = "v=0\r\n" + "o=4855 13760799956958020 13760799956958020 IN IP4 " + config.getLocalSipAddress()
-                + "\r\n" + "s=mysession session\r\n" + "p=+46 8 52018010\r\n" + "c=IN IP4 "
-                + config.getLocalRtpAddress() + "\r\n" + "t=0 0\r\n" + "m=audio " + leg.getLocalRtpPort()
-                + " RTP/AVP 0\r\n" + "a=rtpmap:0 PCMU/8000\r\n";
+        sdpData = "v=0\r\n"
+                + "o=SipCall 13760799956958020 13760799956958020 IN IP4 " + config.getLocalSipAddress() + "\r\n"
+                + "s=SipCall session\r\n"
+                + "c=IN IP4 " + config.getLocalRtpAddress() + "\r\n"
+                + "t=0 0\r\n"
+                + "m=audio " + leg.getLocalRtpPort() + " RTP/AVP " + leg.getPayloadType() + " " + leg.getDtmfPayloadType() + "\r\n"
+                + "a=rtpmap:" + leg.getPayloadType() + " PCMU/8000\r\n"
+                + "a=rtpmap:" + leg.getDtmfPayloadType() + " telephone-event/8000\r\n"
+                + "a=fmtp:" + leg.getDtmfPayloadType() + " 0-15\r\n";
         byte[] sdp = sdpData.getBytes();
         leg.setLocalSdp(sdp);
 
@@ -272,8 +277,10 @@ public class CallManager {
     }
 
     public void connectRtpSession(CallLegData leg) throws ApplicationErrorException {
-        rtpLayer.connectSession(leg);
-        rtpLayer.play(leg);
+        if (leg.beginRtpSession()) {
+            rtpLayer.connectSession(leg);
+            rtpLayer.play(leg);
+        }
     }
 
     public void cleanupRtp(CallLegData leg) {
@@ -281,6 +288,7 @@ public class CallManager {
         rtpLayer.stopPlay(leg);
         endRecord(leg);
         rtpLayer.terminateSession(leg);
+        leg.endRtpSession();
     }
 
     private void endPlay(CallLegData leg) {
@@ -313,6 +321,13 @@ public class CallManager {
 
     public static void removeAudioDestination(RecordWriter audioDestination) {
         CallManager.audioDestination = null;
+    }
+
+    public boolean doSendDtmf(CallLegData leg, String dtmf) {
+        endPlay(leg);
+        LOGGER.debug(leg.getName() + " sending dtmf " + dtmf);
+        leg.pushDtmf(dtmf);
+        return true;
     }
 
 }

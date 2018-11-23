@@ -129,6 +129,7 @@
 	                        <th>Code</th>
 							<th>Record</th>
 							<th>Play</th>
+                            <th>Dtmf</th>
 							<th></th>
 						</tr>
 					</thead>
@@ -150,6 +151,11 @@
 								<button type="button" class="btn btn-primary"
 									ng-click="play(sipcall.callId, sipcall.playFileName)"
 									ng-show="isCallActive(sipcall)">Start</button></td>
+                            <td><input type="text" ng-model="sipcall.dtmf"
+                                size="20" />
+                                <button type="button" class="btn btn-primary"
+                                    ng-click="sendDtmf(sipcall.callId, sipcall.dtmf)"
+                                    ng-show="isCallActive(sipcall)">Send</button></td>
 							<td>
 								<button type="button" class="btn btn-primary"
 									ng-click="sendBye(sipcall.callId)"

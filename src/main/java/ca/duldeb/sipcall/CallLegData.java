@@ -39,6 +39,10 @@ public class CallLegData {
     private ScheduledFuture<?> packetSenderHandle;
     private PlayReader playReader;
     private List<RecordWriter> recordWriters = new ArrayList<RecordWriter>();
+    
+    private int dtmfPayloadType;
+    private Queue<DtmfPayload> dtmfs = new LinkedList<DtmfPayload>();
+    public boolean hasRtpSession;
 
     public CallLegData(int legIndex, int callIndex, CallHandler callHandler, PlayReader playReader) {
         this.legIndex = legIndex;
@@ -52,6 +56,10 @@ public class CallLegData {
         this.packetDuration = 30;
         this.timestamp = 0;
         this.playing = false;
+        
+        this.setDtmfPayloadType(101);
+        
+        this.hasRtpSession = false;
     }
 
     public int getLegIndex() {
@@ -246,4 +254,41 @@ public class CallLegData {
         }
     }
 
+    public void pushDtmf(String dtmf) {
+        for (int i = 0; i < dtmf.length(); i++) {
+            this.dtmfs.add(new DtmfPayload(true, dtmf.charAt(i), false, 160));
+            this.dtmfs.add(new DtmfPayload(false, dtmf.charAt(i), false, 320));
+            this.dtmfs.add(new DtmfPayload(false, dtmf.charAt(i), false, 480));
+            this.dtmfs.add(new DtmfPayload(false, dtmf.charAt(i), true, 640));
+            this.dtmfs.add(new DtmfPayload(false, dtmf.charAt(i), true, 800));
+        }
+    }
+
+    public boolean hasDtmf() {
+        return (!dtmfs.isEmpty());
+    }
+    
+    public DtmfPayload popDtmf() {
+        return dtmfs.poll();
+    }
+
+    public int getDtmfPayloadType() {
+        return dtmfPayloadType;
+    }
+
+    public void setDtmfPayloadType(int dtmfPayloadType) {
+        this.dtmfPayloadType = dtmfPayloadType;
+    }
+
+    public boolean beginRtpSession() {
+        if (hasRtpSession) {
+            return false;
+        }
+        hasRtpSession = true;
+        return true;
+    }
+
+    public void endRtpSession() {
+        hasRtpSession = false;
+    }
 }
