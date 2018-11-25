@@ -15,7 +15,7 @@
 <body>
 	<div class="container" ng-controller="SipCallCtrl">
 		<div class="page-header">
-			<h1>SIP/RTP Test</h1>
+                    <h3>SIP Call Server - SIP/RTP Test Tool - Version 0.2.0 2018-11-24</h3>
 		</div>
 		<div class="panel panel-danger" ng-show="errorMessage">
 			<div class="panel-heading">
@@ -48,23 +48,27 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-sm-offset-6 col-sm-3">
-							<button type="submit"
-								class="btn btn-primary btn-default form-control"
-								ng-disabled="initialized || inInit" ng-click="init()">Initialize</button>
-						</div>
-						<div class="col-sm-3">
-							<button type="button" class="btn btn-primary form-control"
-								ng-disabled="!initialized || inShutdown" ng-click="shutdown()">Shutdown</button>
-						</div>
-					</div>
-					<div class="form-group">
-						<div class="col-sm-offset-6 col-sm-3">
-							<button type="button"
-								class="btn btn-primary form-control"
-								ng-disabled="!initialized || inShutdown" ng-click="waitForInvite()">Wait for INVITE</button>
-						</div>
-					</div>
+                                            <div class="col-sm-offset-6 col-sm-3">
+                                                <button type="submit"
+                                                    class="btn btn-primary btn-default form-control"
+                                                    ng-disabled="initialized || inInit" ng-click="init()">Initialize</button>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="button" class="btn btn-primary form-control"
+                                                    ng-disabled="!initialized || inShutdown" ng-click="shutdown()">Shutdown</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-6 col-sm-3">
+                                                <button type="button"
+                                                    class="btn btn-primary form-control"
+                                                    ng-disabled="!initialized || inShutdown" ng-click="waitForInvite()">Wait for INVITE</button>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <button type="submit" class="btn btn-primary form-control"
+                                                    ng-disabled="!initialized || inShutdown" ng-click="sendInvite()">Send INVITE</button>
+                                            </div>
+                                        </div>
 				</form>
 			</div>
 			<div class="col-md-6">
@@ -105,12 +109,6 @@
                             <input type="text" class="form-control" id="inputPlayFile" ng-model="playFile" />
 		                </div>
                     </div>
-	                <div class="form-group">
-                        <div class="col-sm-offset-6 col-sm-3">
-			                <button type="submit" class="btn btn-primary form-control"
-				                 ng-disabled="!initialized || inShutdown" ng-click="sendInvite()">Send INVITE</button>
-    	                </div>
-    	            </div>
 	           </form>
                <hr />
 	       </div>
@@ -174,14 +172,22 @@
             <div class="col-md-12">
 				<h3>Running SipCall Server</h3>
 				<ul>
-					<li>Build RTP jar:
+					<li>Build RTP stack:
 <pre>git clone git@github.com:jdebroin/efflux.git 
 cd efflux
 mvn install
 cd ..
 </pre>
+
+					<li>Build RTP stack:
+<pre>git clone git@github.com:jdebroin/jsip.git
+cd jsip/m2
+mvn clean install -Dmaven.javadoc.skip=true
+cd ../..
+</pre>
+
 					</li>
-					<li>Build SipCall jar:
+					<li>Build SipCall application:
 <pre>git clone git@github.com:jdebroin/sipcall.git
 cd sipcall
 mvn install
@@ -189,7 +195,7 @@ cd ..
 </pre>
 					</li>
 					<li>Use all-in-one SipCall jar:
-<pre>nohup java -Dlog4j.configuration=log4j.dev.properties -jar sipcall/target/sipcall-0.0.1-SNAPSHOT-jar-with-dependencies.jar 8085
+<pre>nohup java -Dlog4j2.configurationFile=log4j2.xml -jar target/sipcall-0.2.0-jar-with-dependencies.jar 8085 &amp; 
 </pre>
 					</li>
 				</ul>
