@@ -1,13 +1,12 @@
 package ca.duldeb.sipcall;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StandaloneCallHandler implements CallHandler {
-    private static final Log LOGGER = getLog(StandaloneCallHandler.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(StandaloneCallHandler.class);
 
     protected final CallManager callManager;
 

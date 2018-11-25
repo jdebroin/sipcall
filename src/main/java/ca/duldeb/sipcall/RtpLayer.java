@@ -1,15 +1,14 @@
 package ca.duldeb.sipcall;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
 import org.jboss.netty.util.HashedWheelTimer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.biasedbit.efflux.packet.DataPacket;
 import com.biasedbit.efflux.participant.RtpParticipant;
@@ -17,7 +16,7 @@ import com.biasedbit.efflux.participant.RtpParticipantInfo;
 import com.biasedbit.efflux.session.RtpSession;
 
 public class RtpLayer {
-    private static final Log LOGGER = getLog(RtpLayer.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(RtpLayer.class);
 
     private String localAddress;
     private int defaultLocalPort;

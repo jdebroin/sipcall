@@ -1,6 +1,7 @@
 package ca.duldeb.sipcall;
 
-import static org.apache.commons.logging.LogFactory.getLog;
+import gov.nist.javax.sip.Utils;
+import gov.nist.javax.sip.UtilsExt;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -10,9 +11,6 @@ import java.util.Properties;
 import java.util.TooManyListenersException;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import gov.nist.javax.sip.Utils;
-import gov.nist.javax.sip.UtilsExt;
 
 import javax.sdp.Media;
 import javax.sdp.MediaDescription;
@@ -58,10 +56,11 @@ import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SipLayer implements SipListener {
-    private static final Log LOGGER = getLog(SipLayer.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SipLayer.class);
 
     private String ip;
     private int port;

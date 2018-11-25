@@ -1,19 +1,19 @@
 package ca.duldeb.sipcall.resources;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.commons.logging.Log;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ca.duldeb.sipcall.CallManager;
 import ca.duldeb.sipcall.RecordWriter;
 
 public class SipCallWebSocketListener implements WebSocketListener, RecordWriter {
-    private static final Log LOGGER = getLog(SipCallWebSocketListener.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SipCallWebSocketListener.class);
 
     private Session outbound;
 

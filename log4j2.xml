@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="error" monitorInterval="60">
+  <Properties>
+    <Property name="filePrefix">sipcall</Property> <!-- from command line -->
+    <Property name="logDir">.</Property>
+    <Property name="logFileNameGlob">sipcall*.log.gz</Property>
+  </Properties>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+    </Console>
+    <RollingRandomAccessFile name="fileLog" fileName="${filePrefix}.log"
+        filePattern="${filePrefix}-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%-5p %d [%t] %c - %encode{%m}%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="40 MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="40">
+        <Delete basePath="${logDir}" maxDepth="1">
+          <IfFileName glob="${logFileNameGlob}">
+            <IfLastModified age="30d" />
+          </IfFileName>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingRandomAccessFile>
+  </Appenders>
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="fileLog"/>
+    </Root>
+  </Loggers>
+</Configuration>

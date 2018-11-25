@@ -1,10 +1,9 @@
 package ca.duldeb.sipcall;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.biasedbit.efflux.packet.DataPacket;
 import com.biasedbit.efflux.participant.RtpParticipantInfo;
@@ -12,7 +11,7 @@ import com.biasedbit.efflux.session.RtpSession;
 import com.biasedbit.efflux.session.RtpSessionDataListener;
 
 public class RtpDataListener implements RtpSessionDataListener {
-    private static final Log LOGGER = getLog(RtpDataListener.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(RtpDataListener.class);
 
     private CallLegData leg;
 

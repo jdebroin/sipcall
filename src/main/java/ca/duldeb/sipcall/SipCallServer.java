@@ -7,13 +7,18 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ca.duldeb.sipcall.resources.SipCallWebSocketServlet;
 
 public class SipCallServer {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(SipCallServer.class);
+            
     public static void main(String[] args) throws URISyntaxException {
+
         Server server = new Server();
         ServerConnector connector = new ServerConnector(server);
         int port = 8084;
@@ -26,12 +31,9 @@ public class SipCallServer {
         context.setContextPath("/");
         server.setHandler(context);
 
-        ServletContainer servletContainer = new ServletContainer();
+        ResourceConfig resourceConfig = new SipCallResourceConfig();
+        ServletContainer servletContainer = new ServletContainer(resourceConfig);
         ServletHolder servletHolder = new ServletHolder(servletContainer);
-        //servletHolder.setInitParameter(org.glassfish.jersey.server.ServerProperties.PROVIDER_PACKAGES,
-        //        "ca.duldeb.sipcall.resources");
-        servletHolder.setInitParameter(org.glassfish.jersey.server.ServerProperties.PROVIDER_CLASSNAMES,
-                  "ca.duldeb.sipcall.resources.SipCallResource, ca.duldeb.sipcall.resources.ApplicationErrorExceptionMapper");
         context.addServlet(servletHolder, "/ws/*");
 
         ServletHolder staticServletHolder = new ServletHolder("default", DefaultServlet.class);
@@ -47,9 +49,11 @@ public class SipCallServer {
         try {
             server.start();
             System.out.println("SipCallServer HTTP server listening on port " + port);
+            LOGGER.info("SipCallServer HTTP server listening on port " + port);
             server.join();
         } catch (Exception e) {
             e.printStackTrace();
+            LOGGER.error("Error running SipCallServer", e);
         }
     }
 

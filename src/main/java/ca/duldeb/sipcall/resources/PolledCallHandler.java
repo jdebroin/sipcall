@@ -1,11 +1,10 @@
 package ca.duldeb.sipcall.resources;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.util.LinkedList;
 import java.util.Queue;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ca.duldeb.sipcall.ApplicationErrorException;
 import ca.duldeb.sipcall.CallHandler;
@@ -13,7 +12,7 @@ import ca.duldeb.sipcall.CallLegData;
 import ca.duldeb.sipcall.CallManager;
 
 public class PolledCallHandler implements CallHandler {
-    private static final Log LOGGER = getLog(PolledCallHandler.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(PolledCallHandler.class);
 
     protected final CallManager callManager;
     

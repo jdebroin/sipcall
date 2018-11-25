@@ -1,13 +1,12 @@
 package ca.duldeb.sipcall;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BufferPlayReader implements PlayReader {
-    private static final Log LOGGER = getLog(BufferPlayReader.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(BufferPlayReader.class);
 
     @Override
     public int read(CallLegData leg, byte[] packetBuffer, int totalBytesRead, int bytesRemaining) {

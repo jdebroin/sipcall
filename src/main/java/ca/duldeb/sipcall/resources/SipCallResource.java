@@ -1,7 +1,5 @@
 package ca.duldeb.sipcall.resources;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.Consumes;
@@ -15,7 +13,8 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.container.TimeoutHandler;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ca.duldeb.sipcall.ApplicationErrorException;
 import ca.duldeb.sipcall.CallLegData;
@@ -24,7 +23,7 @@ import ca.duldeb.sipcall.SipCallConfig;
 
 @Path("/sipcall")
 public class SipCallResource {
-    private static final Log LOGGER = getLog(SipCallResource.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SipCallResource.class);
 
     private static CallManager callManager;
     private static PolledCallHandler callHandler;
@@ -32,6 +31,7 @@ public class SipCallResource {
     @Path("/init")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public void init(InitParams params) throws ApplicationErrorException {
         LOGGER.info("init");
         doInit(params.getConfig());
@@ -39,6 +39,7 @@ public class SipCallResource {
 
     @Path("/shutdown")
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     public void shutdown() throws ApplicationErrorException {
         LOGGER.info("shutdown");
         if (callManager != null) {

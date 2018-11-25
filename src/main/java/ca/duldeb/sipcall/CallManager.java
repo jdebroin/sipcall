@@ -1,7 +1,5 @@
 package ca.duldeb.sipcall;
 
-import static org.apache.commons.logging.LogFactory.getLog;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,8 +22,9 @@ import javax.sip.PeerUnavailableException;
 import javax.sip.SipException;
 import javax.sip.TransportNotSupportedException;
 
-import org.apache.commons.logging.Log;
 import org.jboss.netty.util.HashedWheelTimer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -33,7 +32,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CallManager {
-    private static final Log LOGGER = getLog(SipCall.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SipCall.class);
 
     private static RecordWriter audioDestination;
 
