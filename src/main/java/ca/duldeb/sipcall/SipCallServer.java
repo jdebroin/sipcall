@@ -32,8 +32,8 @@ public class SipCallServer {
         server.setHandler(context);
 
         ResourceConfig resourceConfig = new SipCallResourceConfig();
-        ServletContainer servletContainer = new ServletContainer(resourceConfig);
-        ServletHolder servletHolder = new ServletHolder(servletContainer);
+        //ServletContainer servletContainer = new ServletContainer(resourceConfig);
+        //ServletHolder servletHolder = new ServletHolder(servletContainer);
         context.addServlet(servletHolder, "/ws/*");
 
         ServletHolder staticServletHolder = new ServletHolder("default", DefaultServlet.class);
