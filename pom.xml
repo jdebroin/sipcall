@@ -14,10 +14,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     
     <junit.version>4.13.2</junit.version>
-    <slf4j.version>2.0.3</slf4j.version>
+    <slf4j.version>2.0.5</slf4j.version>
     <log4j.version>2.19.0</log4j.version>
     <jain-sip-ri.version>1.3.0-91</jain-sip-ri.version>
-    <netty.version>3.10.6.Final</netty.version>
+    <netty.version>4.0.0.Alpha8</netty.version>
     <jersey.version>3.1.0</jersey.version>
     <jackson.version>2.14.0</jackson.version>
     <jetty.version>11.0.12</jetty.version>
@@ -125,7 +125,7 @@
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-core</artifactId>
-      <version>3.5.4</version>
+      <version>3.5.5</version>
     </dependency>
 
     <dependency>
@@ -193,14 +193,17 @@
     </resources>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.10.1</version>
         <configuration>
           <release>11</release>
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.4.2</version>
         <configuration>
           <archive>
             <manifest>
